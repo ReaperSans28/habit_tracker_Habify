@@ -1,5 +1,4 @@
 import os
-import aiofiles
 from datetime import datetime
 from aiogram.types import Message
 from aiogram import Router

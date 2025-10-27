@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import datetime
 from aiogram.types import Message
 from aiogram import Router
@@ -82,3 +81,4 @@ async def save_habit_to_json(message: Message, habit_text: str, image_path: str 
         
     except Exception as e:
         await message.answer(f"Ошибка при сохранении привычки: {e}")
+
