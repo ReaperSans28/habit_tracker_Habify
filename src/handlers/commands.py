@@ -1,6 +1,5 @@
 import json
 import os
-from datetime import datetime
 from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram import Router
@@ -60,17 +59,33 @@ async def cmd_habits(message: Message):
             await message.answer("У вас пока нет добавленных привычек.")
             return
         
-        habits_text = "Ваши привычки:\n\n"
-        for i, habit in enumerate(habits_data[user_id], 1):
-            habits_text += f"{i}. {habit['name']}\n"
-            habits_text += f"   Описание: {habit['description']}\n"
-            habits_text += f"   Дата добавления: {habit['created_at']}\n"
-            if habit.get('image_path'):
-                habits_text += f"   📷 Есть изображение\n"
-            habits_text += "\n"
+        habits = habits_data[user_id]
+        await message.answer(f"У вас {len(habits)} привычек:\n")
         
-        await message.answer(habits_text)
-        
+        # Отправляем каждую привычку отдельным сообщением
+        for i, habit in enumerate(habits, 1):
+            habit_text = (
+                f"📋 Привычка {i}:\n"
+                f"Название: {habit['name']}\n"
+                f"Описание: {habit['description']}\n"
+                f"Дата добавления: {habit['created_at']}"
+            )
+            
+            # Если есть изображение, отправляем его с текстом
+            if habit.get('image_path') and os.path.exists(habit['image_path']):
+                try:
+                    with open(habit['image_path'], 'rb') as photo:
+                        await message.answer_photo(
+                            photo=photo,
+                            caption=habit_text
+                        )
+                except Exception as e:
+                    # Если не удалось отправить изображение, отправляем только текст
+                    await message.answer(habit_text + f"\n\n⚠️ Ошибка загрузки изображения: {e}")
+            else:
+                # Если нет изображения, отправляем только текст
+                await message.answer(habit_text)
+
     except FileNotFoundError:
         await message.answer("Файл с привычками не найден.")
     except Exception as e:
