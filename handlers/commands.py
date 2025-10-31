@@ -51,15 +51,16 @@ start_existing_message_options = [
 
 @commands_router.message(Command("start"))
 async def cmd_start(message: Message):
+    name = message.from_user.first_name
     user_id = message.from_user.id
     user = db.get_user(user_id)
-
-    pass
+    gender = message.from_user
 
     if user:
         await message.answer(random.choice(start_new_message_options))
         return
+    
     else:
         await message.answer(random.choice(start_existing_message_options))
-        db.add_user(user_id)
+        db.add_user(user_id, name, gender, True)
         return

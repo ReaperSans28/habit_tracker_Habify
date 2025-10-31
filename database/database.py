@@ -97,6 +97,11 @@ def get_user(telegram_id: int):
 def add_user(telegram_id: int, first_name: str, gender: str, notifications_enabled: bool):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+    cursor.execute("""INSERT OR IGNORE INTO users (telegram_id, first_name, gender, notifications_enabled) VALUES (?, ?, ?, ?)""",
+                   (telegram_id, first_name, gender, notifications_enabled))
+    conn.commit()
+    conn.close()
+    
 
     
     
