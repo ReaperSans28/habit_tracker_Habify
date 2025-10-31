@@ -3,6 +3,8 @@ from aiogram.filters import Command
 from aiogram import Router
 import random
 
+import database.database as db
+
 commands_router = Router()
 
 start_new_message_options = [
@@ -49,9 +51,15 @@ start_existing_message_options = [
 
 @commands_router.message(Command("start"))
 async def cmd_start(message: Message):
-    user_details = message.from_user
+    user_id = message.from_user.id
+    user = db.get_user(user_id)
 
-    if user_details.is_new:
+    pass
+
+    if user:
         await message.answer(random.choice(start_new_message_options))
+        return
     else:
         await message.answer(random.choice(start_existing_message_options))
+        db.add_user(user_id)
+        return

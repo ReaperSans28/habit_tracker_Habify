@@ -4,6 +4,7 @@ import sys
 from aiogram import Bot, Dispatcher
 from config import BOT_TOKEN
 from handlers import commands_router
+from database.database import initialize_database
 
 # Настройка логирования
 logging.basicConfig(
@@ -25,6 +26,7 @@ dp.include_router(commands_router)
 async def main():
     # Запуск бота
     logger.info("Запуск бота...")
+    initialize_database()
     
     try:
         logger.info("Бот успешно запущен!")
