@@ -75,7 +75,6 @@ def initialize_database():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS habit_actions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        habit_id INTEGER NOT NULL,
         action_date DATE NOT NULL,
         is_completed BOOLEAN NOT NULL DEFAULT 0,
         FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE
@@ -86,6 +85,14 @@ def initialize_database():
     conn.close()
 
 # 
+def add_habit_actions(action_date: str, is_completed: bool):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""INSERT OR IGNORE INTO users (action_date, is_completed) VALUES (?, ?)""",
+                   (action_date, is_completed))
+    conn.commit()
+    conn.close()
+    
 def get_user(telegram_id: int):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -93,6 +100,15 @@ def get_user(telegram_id: int):
     user = cursor.fetchone()
     conn.close()
     return user
+
+def add_habit(telegram_id: int, name: str, description: str, created_at: str, is_active: str, reminder_time: str, schedule_days: str, streak_count: str, longest_streak: str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""INSERT OR IGNORE INTO users (telegram_id, name, description, created_at, is_active, reminder_time, schedule_days, streak_count, longest_streak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   (telegram_id, name, description, created_at, is_active, reminder_time, schedule_days, streak_count, longest_streak))
+    conn.commit()
+    conn.close()
+       
     
 def add_user(telegram_id: int, first_name: str, gender: str, notifications_enabled: bool):
     conn = sqlite3.connect(DB_PATH)
@@ -101,10 +117,3 @@ def add_user(telegram_id: int, first_name: str, gender: str, notifications_enabl
                    (telegram_id, first_name, gender, notifications_enabled))
     conn.commit()
     conn.close()
-    
-
-    
-    
-    
-    
-    

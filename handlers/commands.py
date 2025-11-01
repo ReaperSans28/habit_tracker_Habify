@@ -4,6 +4,8 @@ from aiogram import Router
 import random
 
 import database.database as db
+import keyboards.inline as kb
+import keyboards.main_menu as menu
 
 commands_router = Router()
 
@@ -57,10 +59,9 @@ async def cmd_start(message: Message):
     gender = message.from_user
 
     if user:
-        await message.answer(random.choice(start_new_message_options))
+        await message.answer(random.choice(start_new_message_options), reply_markup=menu.start())
         return
     
-    else:
-        await message.answer(random.choice(start_existing_message_options))
-        db.add_user(user_id, name, gender, True)
-        return
+    await message.answer(random.choice(start_existing_message_options))
+    db.add_user(user_id, name, gender, True)
+    return
