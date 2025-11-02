@@ -65,3 +65,9 @@ async def cmd_start(message: Message):
     await message.answer(random.choice(start_existing_message_options))
     db.add_user(user_id, name, gender, True)
     return
+
+@commands_router.message(Command("my_habits"))
+async def habits_cmd(message: Message):
+    await message.answer("📦 Ваш список привычек ⬇️:", reply_markup=kb.my_habits)
+    return
+

@@ -117,3 +117,34 @@ def add_user(telegram_id: int, first_name: str, gender: str, notifications_enabl
                    (telegram_id, first_name, gender, notifications_enabled))
     conn.commit()
     conn.close()
+    
+def edit_habit(name: str, description: str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE habits SET description = ? WHERE name = ?", (name, description))
+    conn.commit()
+    conn.close()
+    
+def delete_habit(habit_id: int):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM habits WHERE habit_id = ?", (habit_id,))
+    conn.commit()
+    conn.close()
+    
+def delete_habit_action(id: int):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM habit_actions WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    
+def edit_notifications_enabled(telegram_id: int, notifications_enabled: bool):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET notifications_enabled = ? WHERE telegram_id = ?", (telegram_id, notifications_enabled))
+    conn.commit()
+    conn.close()
+    
+
+    
