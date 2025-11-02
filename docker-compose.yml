@@ -1,7 +1,7 @@
 services:
   telegram-bot:
     build: .
-    container_name: cdway_bot
+    container_name: habit_bot
     restart: always
     env_file:
       - .env 
