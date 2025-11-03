@@ -16,5 +16,3 @@ def habit():
     return menu
 
 
-
-
