@@ -29,6 +29,7 @@
 DB_FOLDER = "data"
 DB_FILE = "database.sqlite"
 
+from typing import Optional
 from pathlib import Path
 import sqlite3
 
@@ -75,48 +76,83 @@ def initialize_database():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS habit_actions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        habit_id INTEGER,
         action_date DATE NOT NULL,
         is_completed BOOLEAN NOT NULL DEFAULT 0,
-        FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE
+        FOREIGN KEY (habit_id) REFERENCES habits(habit_id) ON DELETE CASCADE
     )
     """)
 
     conn.commit()
     conn.close()
 
-# 
+# Функции для взаимодействия с базой данных
+
+def get_user(telegram_id: int) -> Optional[dict]:
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row is not None else None
+
+
+
+def add_user(telegram_id: int, 
+             first_name: str, 
+             gender: str, 
+             notifications_enabled: bool):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""INSERT OR IGNORE INTO users (telegram_id, first_name, gender, notifications_enabled) 
+                   VALUES (?, ?, ?, ?)""",
+                   (telegram_id, first_name, gender, notifications_enabled)
+                   )
+    conn.commit()
+    conn.close()
+
+def add_habit(
+        telegram_id: int, 
+        name: str, 
+        description: str, 
+        created_at: str, 
+        is_active: str, 
+        reminder_time: str, 
+        schedule_days: str, 
+        streak_count: str, 
+        longest_streak: str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+                   INSERT OR IGNORE INTO habits 
+                        (telegram_id, name, description, created_at, 
+                        is_active, reminder_time, schedule_days, streak_count, longest_streak) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   (telegram_id, name, description, created_at, 
+                    is_active, reminder_time, schedule_days, streak_count, longest_streak))
+    conn.commit()
+    conn.close()
+
+###########################################################################
+
+import pandas as pd
+
+def get_active_habits(telegram_id: int) -> pd.DataFrame:
+    conn = sqlite3.connect(DB_PATH)
+    query = "SELECT * FROM habits WHERE telegram_id = ? AND is_active = 1"
+    df = pd.read_sql_query(query, conn, params=(telegram_id,))
+    conn.close()
+    return df
+       
 def add_habit_actions(action_date: str, is_completed: bool):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""INSERT OR IGNORE INTO users (action_date, is_completed) VALUES (?, ?)""",
+    cursor.execute("""INSERT OR IGNORE INTO habit_actions (action_date, is_completed) VALUES (?, ?)""",
                    (action_date, is_completed))
     conn.commit()
     conn.close()
-    
-def get_user(telegram_id: int):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
-    user = cursor.fetchone()
-    conn.close()
-    return user
 
-def add_habit(telegram_id: int, name: str, description: str, created_at: str, is_active: str, reminder_time: str, schedule_days: str, streak_count: str, longest_streak: str):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""INSERT OR IGNORE INTO users (telegram_id, name, description, created_at, is_active, reminder_time, schedule_days, streak_count, longest_streak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                   (telegram_id, name, description, created_at, is_active, reminder_time, schedule_days, streak_count, longest_streak))
-    conn.commit()
-    conn.close()
-       
-    
-def add_user(telegram_id: int, first_name: str, gender: str, notifications_enabled: bool):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""INSERT OR IGNORE INTO users (telegram_id, first_name, gender, notifications_enabled) VALUES (?, ?, ?, ?)""",
-                   (telegram_id, first_name, gender, notifications_enabled))
-    conn.commit()
-    conn.close()
     
 def edit_habit(name: str, description: str):
     conn = sqlite3.connect(DB_PATH)

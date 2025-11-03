@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
 from handlers import commands_router
 from database.database import initialize_database
@@ -13,19 +14,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Инициализация бота и диспетчера
-if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN не найден в переменных окружения!")
-    
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
-
-# Регистрация роутеров
-dp.include_router(commands_router)
-
 async def main():
     # Запуск бота
     logger.info("Запуск бота...")
+    
+    # Инициализация бота и диспетчера
+    if not BOT_TOKEN:
+        raise ValueError("BOT_TOKEN не найден в переменных окружения!")    
+    bot = Bot(token=BOT_TOKEN)
+
+    # ВАЖНО: storage для FSM, иначе state не работает
+    dp = Dispatcher(storage=MemoryStorage())
+
+    # Регистрация роутеров
+    dp.include_router(commands_router)
+
+    # Инициализация базы данных
     initialize_database()
     
     try:
