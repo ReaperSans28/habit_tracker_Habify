@@ -213,7 +213,7 @@ def add_streak(telegram_id: int, streak_count: int, is_completed: bool, is_activ
     
     if is_active == True:
         if is_completed == True:
-         cursor.execute("UPDATE habits SET streak_count = +1 WHERE telegram_id = ?", (telegram_id, streak_count))
+         cursor.execute("UPDATE habits SET streak_count = + 1 WHERE telegram_id = ?", (telegram_id, streak_count))
          conn.commit()
          conn.close()
          return
