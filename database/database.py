@@ -63,7 +63,7 @@ def initialize_database():
         name TEXT NOT NULL,
         description TEXT,
         created_at DATE NOT NULL,
-        is_active BOOLEAN NOT NULL DEFAULT 1,
+        is_active BOOLEAN,
         reminder_time TIME,
         schedule_days TEXT,
         streak_count INTEGER DEFAULT 0,
@@ -135,8 +135,7 @@ def add_habit(
     conn.close()
 
 ###########################################################################
-
-import pandas as pd
+import pd
 
 def get_active_habits(telegram_id: int) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
@@ -152,8 +151,22 @@ def add_habit_actions(action_date: str, is_completed: bool):
                    (action_date, is_completed))
     conn.commit()
     conn.close()
-
     
+def add_is_active(name: str, is_active: bool):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE habits SET is_active = ? WHERE name = ?", (name, is_active))
+    conn.commit()
+    conn.close()
+    
+def add_is_completed(name: str, is_completed: bool):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE habit_actions SET is_completed = ? WHERE name = ?", (name, is_completed))
+    conn.commit()
+    conn.close()
+
+
 def edit_habit(name: str, description: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
