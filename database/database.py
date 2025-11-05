@@ -211,15 +211,8 @@ def add_streak(telegram_id: int, streak_count: int, is_completed: bool, is_activ
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND is_completed = ?", (telegram_id, is_completed))
     
-    if is_active == True:
-        if is_completed == True:
-         cursor.execute("UPDATE habits SET streak_count = + 1 WHERE telegram_id = ?", (telegram_id, streak_count))
-         conn.commit()
-         conn.close()
-         return
-        
-    conn.commit()
-    conn.close()
+    if is_active and is_completed:
+        cursor.execute("""UPDATE habits SET streak_count = streak_count + 1 WHERE telegram_id + ?""")
 
     
 def get_streak(telegram_id: int, streak_count: int):
