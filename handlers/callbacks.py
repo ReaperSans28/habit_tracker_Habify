@@ -26,6 +26,7 @@ class Habit(StatesGroup):
 @habit_callback.callback_query(F.data == "back")
 async def back_menu(callback: CallbackQuery):
     await callback.message.answer("Вы вернулись назад", reply_markup=kb.start())
+    return
 
 
 # Начало создания привычки

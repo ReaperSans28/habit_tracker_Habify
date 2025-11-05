@@ -148,8 +148,9 @@ def get_habbit(telegram_id: int, name: str, description: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND name = ? AND description = ?", (telegram_id, name, description))
-    conn.commit()
+    result = cursor.fetchall()
     conn.close()
+    return result
     
        
 def add_habit_actions(action_date: str, is_completed: bool):
@@ -203,15 +204,31 @@ def edit_notifications_enabled(telegram_id: int, notifications_enabled: bool):
     conn.commit()
     conn.close()
     
+    
 # В разработке
-def add_streak(telegram_id: int, streak_count: int):
+def add_streak(telegram_id: int, streak_count: int, is_completed: bool, is_active: bool):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    if streak_count > 0:
-        cursor.execute("UPDATE ")
-    cursor.execute("")
+    cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND is_completed = ?", (telegram_id, is_completed))
+    
+    if is_active == True:
+        if is_completed == True:
+         cursor.execute("UPDATE habits SET streak_count = +1 WHERE telegram_id = ?", (telegram_id, streak_count))
+         conn.commit()
+         conn.close()
+         return
+        
     conn.commit()
     conn.close()
+
+    
+def get_streak(telegram_id: int, streak_count: int):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND streak_count = ?", (telegram_id, streak_count))
+    result = cursor.fetchall()
+    conn.close()
+    return result
     
 
     
