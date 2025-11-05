@@ -143,6 +143,14 @@ def get_active_habits(telegram_id: int) -> pd.DataFrame:
     df = pd.read_sql_query(query, conn, params=(telegram_id,))
     conn.close()
     return df
+
+def get_habbit(telegram_id: int, name: str, description: str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND name = ? AND description = ?", (telegram_id, name, description))
+    conn.commit()
+    conn.close()
+    
        
 def add_habit_actions(action_date: str, is_completed: bool):
     conn = sqlite3.connect(DB_PATH)
@@ -152,25 +160,25 @@ def add_habit_actions(action_date: str, is_completed: bool):
     conn.commit()
     conn.close()
     
-def add_is_active(name: str, is_active: bool):
+def add_is_active(telegram_id: int, is_active: bool):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("UPDATE habits SET is_active = ? WHERE name = ?", (name, is_active))
+    cursor.execute("UPDATE habits SET is_active = ? WHERE telegram_id = ?", (telegram_id, is_active))
     conn.commit()
     conn.close()
     
-def add_is_completed(name: str, is_completed: bool):
+def add_is_completed(telegram_id: int, is_completed: bool):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("UPDATE habit_actions SET is_completed = ? WHERE name = ?", (name, is_completed))
+    cursor.execute("UPDATE habit_actions SET is_completed = ? WHERE telegram_id = ?", (telegram_id, is_completed))
     conn.commit()
     conn.close()
 
 
-def edit_habit(name: str, description: str):
+def edit_habit(telegram_id: int, description: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("UPDATE habits SET description = ? WHERE name = ?", (name, description))
+    cursor.execute("UPDATE habits SET description = ? WHERE telegram_id = ?", (telegram_id, description))
     conn.commit()
     conn.close()
     
@@ -192,6 +200,16 @@ def edit_notifications_enabled(telegram_id: int, notifications_enabled: bool):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("UPDATE users SET notifications_enabled = ? WHERE telegram_id = ?", (telegram_id, notifications_enabled))
+    conn.commit()
+    conn.close()
+    
+# В разработке
+def add_streak(telegram_id: int, streak_count: int):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    if streak_count > 0:
+        cursor.execute("UPDATE ")
+    cursor.execute("")
     conn.commit()
     conn.close()
     
