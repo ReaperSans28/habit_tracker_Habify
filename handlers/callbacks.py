@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 import datetime
-
+import keyboards.main_menu as kbmenu
 import keyboards.inline as kb
 import database.database as db
 
@@ -25,8 +25,8 @@ class Habit(StatesGroup):
 # Обработчик возврата
 @habit_callback.callback_query(F.data == "back")
 async def back_menu(callback: CallbackQuery):
-    await callback.message.answer("Вы вернулись назад", reply_markup=kb.start())
-
+    await callback.message.answer("Вы вернулись назад", reply_markup=kbmenu.start())
+    return
 
 # Начало создания привычки
 @habit_callback.callback_query(F.data == "create_habit")

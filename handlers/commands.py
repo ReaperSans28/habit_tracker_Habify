@@ -130,8 +130,21 @@ async def handle_name_input(message: Message, state: FSMContext):
 
 
 
-# @commands_router.message(Command("my_habits"))
-# async def habits_cmd(message: Message):
-#     await message.answer("📦 Ваш список привычек ⬇️:", reply_markup=kb.my_habits)
-#     return
+@commands_router.message(Command("my_habits"))
+async def habits_cmd(message: Message):
+    users_telegram_id = (message.from_user.id if message.from_user else None)
+    if not users_telegram_id:
+        await message.answer("❌ Ошибка: не удалось определить пользователя.")
+        return
+
+    active_habits = db.get_active_habits(users_telegram_id)
+    
+    if active_habits.empty:
+        await message.answer("📦 У вас пока нет активных привычек.")
+        return
+
+    await message.answer(
+        "📦 Ваш список привычек ⬇️:",
+        reply_markup=kb.habits_list(active_habits, page=0)
+    )
 

@@ -63,7 +63,7 @@ def initialize_database():
         name TEXT NOT NULL,
         description TEXT,
         created_at DATE NOT NULL,
-        is_active BOOLEAN NOT NULL DEFAULT 1,
+        is_active BOOLEAN,
         reminder_time TIME,
         schedule_days TEXT,
         streak_count INTEGER DEFAULT 0,
@@ -135,7 +135,6 @@ def add_habit(
     conn.close()
 
 ###########################################################################
-
 import pandas as pd
 
 def get_active_habits(telegram_id: int) -> pd.DataFrame:
@@ -144,7 +143,30 @@ def get_active_habits(telegram_id: int) -> pd.DataFrame:
     df = pd.read_sql_query(query, conn, params=(telegram_id,))
     conn.close()
     return df
-       
+
+
+def get_habbit(telegram_id: int, name: str, description: str):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND name = ? AND description = ?",
+                   (telegram_id, name, description))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row is not None else None
+
+
+def get_habit_by_id(telegram_id: int, name: str, description: str) -> Optional[dict]:
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND name = ? AND description = ?",
+                   (telegram_id, name, description))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row is not None else None
+
+
 def add_habit_actions(action_date: str, is_completed: bool):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -153,21 +175,39 @@ def add_habit_actions(action_date: str, is_completed: bool):
     conn.commit()
     conn.close()
 
-    
-def edit_habit(name: str, description: str):
+
+def add_is_active(telegram_id: int, is_active: bool):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("UPDATE habits SET description = ? WHERE name = ?", (name, description))
+    cursor.execute("UPDATE habits SET is_active = ? WHERE telegram_id = ?", (telegram_id, is_active))
     conn.commit()
     conn.close()
-    
+
+
+def add_is_completed(telegram_id: int, is_completed: bool):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE habit_actions SET is_completed = ? WHERE telegram_id = ?", (telegram_id, is_completed))
+    conn.commit()
+    conn.close()
+
+
+def edit_habit(telegram_id: int, description: str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE habits SET description = ? WHERE telegram_id = ?", (telegram_id, description))
+    conn.commit()
+    conn.close()
+
+
 def delete_habit(habit_id: int):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM habits WHERE habit_id = ?", (habit_id,))
     conn.commit()
     conn.close()
-    
+
+
 def delete_habit_action(id: int):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -183,4 +223,12 @@ def edit_notifications_enabled(telegram_id: int, notifications_enabled: bool):
     conn.close()
     
 
-    
+# В разработке
+def add_streak(telegram_id: int, streak_count: int):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    if streak_count > 0:
+        cursor.execute("UPDATE ")
+    cursor.execute("")
+    conn.commit()
+    conn.close()
