@@ -207,18 +207,19 @@ def edit_notifications_enabled(telegram_id: int, notifications_enabled: bool):
     
 # В разработке
 def add_streak(telegram_id: int, streak_count: int, is_completed: bool, is_active: bool):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND is_completed = ?", (telegram_id, is_completed))
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
     
     if is_active and is_completed:
-        cursor.execute("""UPDATE habits SET streak_count = streak_count + 1 WHERE telegram_id + ?""")
-
+        cursor.execute("""UPDATE habits SET streak_count = streak_count + 1 WHERE telegram_id + ?""", (telegram_id,))
+        conn.commit()
+        return "Streak увеличен!"
     
+
 def get_streak(telegram_id: int, streak_count: int):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM habits WHERE telegram_id = ? AND streak_count = ?", (telegram_id, streak_count))
+    cursor.execute("SELECT telegram_id, streak_count FROM habits", (telegram_id, streak_count))
     result = cursor.fetchall()
     conn.close()
     return result
