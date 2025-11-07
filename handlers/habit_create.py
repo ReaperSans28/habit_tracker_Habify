@@ -9,8 +9,9 @@ from aiogram.fsm.context import FSMContext
 import datetime
 import json
 
-import database.database as db
+from database.database import db
 from handlers.messages import render_message
+from keyboards import menus as menu
 from utils.habit_format_validator import habit_format_validator
 from utils.time_day_parser import time_day_parser
 from utils.name_validator import Gender
@@ -24,10 +25,10 @@ class HabitCreate(StatesGroup):
     waiting_for_input = State()
 
 
-@habit_create_router.callback_query(F.data == "create_habit")
+@habit_create_router.callback_query(F.data == "habit:create")
 async def start_habit_creation(callback: CallbackQuery, state: FSMContext):
     """
-    Handles the 'create_habit' button click.
+    Handles the 'habit:create' button click.
     Shows prompt with format explanation and examples.
     """
     # Get user info for message rendering
@@ -37,7 +38,7 @@ async def start_habit_creation(callback: CallbackQuery, state: FSMContext):
         return
     
     # Get user from database for gender
-    user = db.get_user(user_id)
+    user = db.users.get_user(user_id)
     if not user:
         await callback.answer("Ошибка: пользователь не найден в базе")
         return
@@ -69,7 +70,7 @@ async def process_habit_input(message: Message, state: FSMContext):
         return
     
     # Get user for gender
-    user = db.get_user(user_id)
+    user = db.users.get_user(user_id)
     if not user:  # Не должно случиться, на всякий случай
         await message.answer("Ошибка: пользователь не найден")
         return
@@ -116,7 +117,7 @@ async def process_habit_input(message: Message, state: FSMContext):
     try:
         created_at = datetime.datetime.now()
         
-        db.add_habit(
+        db.habits.add_habit(
             telegram_id=user_id,
             name=habit_name,
             description=habit_description,
@@ -157,6 +158,9 @@ async def process_habit_input(message: Message, state: FSMContext):
         
         # Clear FSM state
         await state.clear()
+        
+        # Return to main menu (Schema: MODE -- Нет --> MM)
+        await message.answer("Главное меню:", reply_markup=menu.main_menu())
         
     except Exception as e:
         # Handle database errors

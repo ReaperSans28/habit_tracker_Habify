@@ -2,9 +2,9 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram import Router
 
-import database.database as db
+from database.database import db
 import keyboards.inline as kb
-import keyboards.main_menu as menu
+import keyboards.menus as menu
 
 commands_router = Router()
 
@@ -27,7 +27,7 @@ async def cmd_start(message: Message, state: FSMContext):
         raise ValueError("Не удалось получить telegram_id пользователя.")
 
     # пытаемся получить пользователя из БД
-    user = db.get_user(users_telegram_id)
+    user = db.users.get_user(users_telegram_id)
 
     # === Новый пользователь ===================================================
     if not user:
@@ -49,7 +49,7 @@ async def cmd_start(message: Message, state: FSMContext):
         name_normalized = users_first_name[:1].upper() + users_first_name[1:]    # нормализация капитализации
 
         # Создаём запись в БД
-        db.add_user(users_telegram_id, name_normalized, users_gender, True)
+        db.users.add_user(users_telegram_id, name_normalized, users_gender, True)
 
         # Приветственное сообщение Wednesday (из start_new)
         await message.answer(render_message("start_new", name_normalized, users_gender))
@@ -73,7 +73,7 @@ async def cmd_start(message: Message, state: FSMContext):
     )
 
     # Проверить список активных привычек
-    active_habits = db.get_active_habits(users_telegram_id)
+    active_habits = db.habits.get_active_habits(users_telegram_id)
     if active_habits.empty:
         # Нет привычек — онбординг
         await asyncio.sleep(1.2)
@@ -87,7 +87,7 @@ async def cmd_start(message: Message, state: FSMContext):
         await asyncio.sleep(1.2)
         await message.answer(
             "Главное меню:",
-            reply_markup=menu.start()
+            reply_markup=menu.main_menu()
         )
 
 
@@ -115,7 +115,7 @@ async def handle_name_input(message: Message, state: FSMContext):
     users_gender: Gender = nvr.gender
     name_normalized = incoming[:1].upper() + incoming[1:]
 
-    db.add_user(users_telegram_id, name_normalized, users_gender, True)
+    db.users.add_user(users_telegram_id, name_normalized, users_gender, True)
     await state.clear()
 
     # Приветственное сообщение Wednesday (из start_new)
