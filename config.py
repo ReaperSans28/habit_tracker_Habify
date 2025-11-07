@@ -14,3 +14,7 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 # Проверяем наличие токена
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в переменных окружения!")
+
+
+TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'
+

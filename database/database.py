@@ -28,13 +28,19 @@
 
 DB_FOLDER = "data"
 DB_FILE = "database.sqlite"
+DB_TEST_FILE = "database_test.sqlite"
 
 from typing import Optional
 from pathlib import Path
 import sqlite3
 import pandas as pd
 
-DB_PATH = Path(DB_FOLDER) / DB_FILE
+
+from config import TEST_MODE
+if TEST_MODE:
+    DB_PATH = Path(DB_FOLDER) / DB_TEST_FILE
+else:
+    DB_PATH = Path(DB_FOLDER) / DB_FILE
 
 def create_connection():
     conn = sqlite3.connect(DB_PATH)
