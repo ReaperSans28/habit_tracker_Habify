@@ -40,6 +40,12 @@ def cleanup_test_database():
     print("\n" + "=" * 60)
     print("CLEANING UP TEST DATABASE")
     print("=" * 60)
+
+    # make sure that we are deleting the test database
+    # DB_PATH should contain 'test' substring to avoid accidental deletion
+    if 'test' not in DB_PATH.name.lower():
+        print(f"⚠️  Aborting cleanup: DB_PATH does not appear to be a test database: {DB_PATH}")
+        return
     
     if DB_PATH.exists():
         print(f"Removing test database: {DB_PATH}")
