@@ -70,7 +70,7 @@ async def process_habit_input(message: Message, state: FSMContext):
     
     # Get user for gender
     user = db.get_user(user_id)
-    if not user:
+    if not user:  # Не должно случиться, на всякий случай
         await message.answer("Ошибка: пользователь не найден")
         return
     

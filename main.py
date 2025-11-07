@@ -4,7 +4,7 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
-from handlers import commands_router, habit_create_router
+from handlers import commands_router, habit_create_router, habits_router
 from database.database import initialize_database
 
 # Настройка логирования
@@ -29,6 +29,7 @@ async def main():
     # Регистрация роутеров
     dp.include_router(commands_router)
     dp.include_router(habit_create_router)
+    dp.include_router(habits_router)        # всё остальное (листы, карточки, действия)
 
     # Инициализация базы данных
     initialize_database()
