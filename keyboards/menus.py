@@ -1,5 +1,5 @@
 # menus.py
-# All keyboard menus used in the habit tracker bot
+# Все клавиатуры бота
 from typing import List, Tuple
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup
@@ -7,8 +7,8 @@ from aiogram.types import InlineKeyboardMarkup
 
 # ============================================================================
 # ONBOARDING MENU
-# Used when: User has no habits (new or returning user)
-# Schema: ONB["Онбординг<br>onboarding_intro<br>кнопка: Создать первую привычку"]
+# Используется при создании первой привычки пользователем
+# Схема: ONB["Онбординг<br>onboarding_intro<br>кнопка: Создать первую привычку"]
 # ============================================================================
 def onboarding() -> InlineKeyboardMarkup:
     """
@@ -22,16 +22,14 @@ def onboarding() -> InlineKeyboardMarkup:
 
 # ============================================================================
 # MAIN MENU
-# Used when: Returning user with habits
-# Schema: MM["Главное меню<br>Мои привычки<br>Добавить новую<br>Помощь"]
-# Buttons: "Мои привычки" → habit:list
+# Схема: MM["Главное меню<br>Мои привычки<br>Добавить новую<br>Помощь"]
+# Кнопки: "Мои привычки" → habit:list
 #          "Добавить новую" → habit:create
 #          "Помощь" → help
 # ============================================================================
 def main_menu() -> InlineKeyboardMarkup:
     """
-    Main menu with 3 buttons: My Habits, Add New, Help.
-    No parameters needed - always shows the same 3 buttons.
+    Основное меню бота.
     """
     kb = InlineKeyboardBuilder()
     kb.button(text="📦 Мои привычки", callback_data="habit:list")
@@ -42,22 +40,22 @@ def main_menu() -> InlineKeyboardMarkup:
 
 
 # ============================================================================
-# MY HABITS (Habit List)
-# Used when: User clicks "Мои привычки" from main menu
-# Schema: HLIST["Список привычек"]
+# MY HABITS (Список привычек)
+# Используется когда пользователь нажимает "Мои привычки" из главного меню
+# Схема: HLIST["Список привычек"]
 #         HLIST -- Открыть привычку --> OPEN
 #         HLIST -- Назад --> MM
 # ============================================================================
 def my_habits(habits: List[Tuple[int, str, bool, str]]) -> InlineKeyboardMarkup:
     """
-    List of habits with back button.
+    Список привычек пользователя и кнопка "назад".
     
-    Args:
-        habits: List of tuples (habit_id, name, is_active, reminder_time)
-                from db.habits.list_habits()
-    
-    Returns:
-        Keyboard with habit buttons + back button
+    Аргументы:
+        habits: Список кортежей (habit_id, name, is_active, reminder_time)
+                из db.habits.list_habits()
+
+    Возвращает:
+        Клавиатура с кнопками привычек + кнопка "назад"
     """
     kb = InlineKeyboardBuilder()
     
@@ -81,11 +79,11 @@ def my_habits(habits: List[Tuple[int, str, bool, str]]) -> InlineKeyboardMarkup:
 
 
 # ============================================================================
-# HABIT CARD (Habit Actions)
-# Used when: User opens a specific habit from list
-# Schema: OPEN["Карточка привычки<br>Отметить выполнение<br>Редактировать<br>
+# HABIT CARD (Карточка привычки)
+# Используется когда пользователь открывает конкретную привычку
+# Схема: OPEN["Карточка привычки<br>Отметить выполнение<br>Редактировать<br>
 #              Пауза/Включить<br>Удалить<br>Назад"]
-# Buttons: "Отметить выполнение" → habit:check:{hid}
+# Кнопки:  "Отметить выполнение" → habit:check:{hid}
 #          "Редактировать" → habit:edit:{hid}
 #          "Пауза"/"Включить" → habit:deactivate/activate:{hid}
 #          "Удалить" → habit:delete_confirm:{hid}
@@ -128,9 +126,9 @@ def habit_card(habit_id: int, is_active: bool) -> InlineKeyboardMarkup:
 
 
 # ============================================================================
-# DELETE CONFIRMATION
-# Used when: User clicks delete button on habit card
-# Schema: CONF["Подтверждение удаления"]
+# DELETE CONFIRMATION (Подтверждение удаления привычки)
+# Используется когда: Пользователь нажимает кнопку удаления на карточке привычки
+# Схема: CONF["Подтверждение удаления"]
 #         CONF -- Удалить --> DELETE
 #         CONF -- Отмена --> OPEN
 # ============================================================================
@@ -147,5 +145,5 @@ def confirm_delete(habit_id: int) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text="✅ Удалить", callback_data=f"habit:delete:{habit_id}")
     kb.button(text="◀️ Отмена", callback_data=f"habit:open:{habit_id}")
-    kb.adjust(2)  # Two buttons side by side
+    kb.adjust(2)  # Две кнопки в ряд
     return kb.as_markup()

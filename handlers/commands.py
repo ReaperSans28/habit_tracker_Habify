@@ -127,11 +127,3 @@ async def handle_name_input(message: Message, state: FSMContext):
         reply_markup=menu.onboarding()
     )
     return
-
-
-
-# @commands_router.message(Command("my_habits"))
-# async def habits_cmd(message: Message):
-#     await message.answer("📦 Ваш список привычек ⬇️:", reply_markup=kb.my_habits)
-#     return
-

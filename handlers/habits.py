@@ -3,7 +3,6 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from datetime import datetime
 import json
 
 from keyboards import menus as menu
@@ -33,7 +32,7 @@ async def return_to_main_menu(callback: CallbackQuery):
     """Return to main menu from habit list"""
     reply = menu.main_menu()
     assert callback.message
-    await callback.message.edit_reply_markup(reply_markup=reply)
+    await callback.message.answer("Главное меню:", reply_markup=reply)
     await callback.answer()
 
 
@@ -52,7 +51,7 @@ async def list_habits_cb(callback: CallbackQuery):
     
     reply = menu.my_habits(habits)
     assert callback.message
-    await callback.message.edit_reply_markup(reply_markup=reply)
+    await callback.message.answer("Мои привычки:", reply_markup=reply)
     await callback.answer()
 
 
@@ -75,9 +74,12 @@ async def open_habit(cb: CallbackQuery):
     # Convert is_active to bool
     is_active = bool(int(h["is_active"])) if isinstance(h["is_active"], str) else bool(h["is_active"])
     
+    # Format habit card message
+    habit_text = f"**{h['name']}**\n{h['description']}\n\n⏰ {h['reminder_time']}"
+    
     reply = menu.habit_card(habit_id=hid, is_active=is_active)
     assert cb.message
-    await cb.message.edit_reply_markup(reply_markup=reply)
+    await cb.message.answer(habit_text, reply_markup=reply, parse_mode="Markdown")
     await cb.answer()
 
 
@@ -141,7 +143,7 @@ async def delete_confirm(cb: CallbackQuery):
     hid = int(cb.data.split(":")[-1])
     reply = menu.confirm_delete(hid)
     assert cb.message
-    await cb.message.edit_reply_markup(reply_markup=reply)
+    await cb.message.answer("Уверен? Отменить будет невозможно.", reply_markup=reply)
     await cb.answer()
 
 
@@ -157,7 +159,7 @@ async def delete_habit(cb: CallbackQuery):
     habits = db.habits.list_habits(uid)
     
     assert cb.message
-    await cb.message.edit_reply_markup(reply_markup=menu.my_habits(habits))
+    await cb.message.answer("Мои привычки:", reply_markup=menu.my_habits(habits))
     await cb.answer("🗑 Удалено")
 
 
@@ -195,8 +197,8 @@ async def start_habit_edit(callback: CallbackQuery, state: FSMContext):
     # Set FSM state to wait for input
     await state.set_state(HabitEdit.waiting_for_input)
     
-    # Send prompt message (same as creation)
-    prompt_msg = render_message("habit_prompt", username, gender)
+    # Send prompt message for editing
+    prompt_msg = render_message("habit_prompt_edit", username, gender)
     
     if callback.message:
         await callback.message.answer(prompt_msg)
@@ -318,27 +320,29 @@ async def process_habit_edit(message: Message, state: FSMContext):
 # ============================================================================
 # HELP HANDLER
 # Callback: "help"
-# Schema: MM -- Помощь --> (help screen)
+# Схема: MM -- Помощь --> (help screen)
 # ============================================================================
 @habits_router.callback_query(F.data == "help")
 async def show_help(callback: CallbackQuery):
     """
-    Show help information.
-    For now, a simple message. Can be expanded later.
+    Справка по использованию бота.
     """
+
     help_text = (
-        "📖 **Справка по боту**\n\n"
-        "**Формат добавления привычки:**\n"
+        "📖 **Справка**\n\n"
+        "Ты хочешь разобраться в правилах. Похвально. Постараюсь быть прямолинейной.\n\n"
+        "**Как добавить привычку:**\n"
         "`название -- описание -- время и дни`\n\n"
         "**Примеры:**\n"
-        "• `Бег -- Утренняя пробежка 5км -- 6:30 ежедневно`\n"
-        "• `Чтение -- Минимум 20 страниц -- 21:00 пн, ср, пт`\n"
-        "• `Медитация -- 10 минут спокойствия -- 7:00 пн-пт`\n\n"
-        "**Время:** можно указывать как `6:30`, `18:45`, `6:30 am`, `9:00 pm`\n\n"
-        "**Дни:** `ежедневно`, `пн-пт`, `пн, ср, пт`, `daily`, `mon, wed, fri`\n\n"
-        "Используйте кнопки для управления привычками."
-    )
-    
+        "• `Бег -- Пробежка 5км -- 6:30 ежедневно`\n"
+        "• `Чтение -- 20 страниц -- 21:00 пн, ср, пт`\n"
+        "• `Медитация -- 10 минут тишины -- 7:00 пн-пт`\n\n"
+        "**О времени:** `6:30`, `18:45`, `6:30 am`, `9:00 pm` — я понимаю все эти формы.\n\n"
+        "**О днях:** `ежедневно`, `пн-пт`, `пн, ср, пт`, `daily`, `mon, wed, fri`.\n\n"
+        "Кнопки тоже работают. Если их боишься — можно всё вводить вручную.\n"
+        "**безэмоционально** Я фиксирую. Остальное — твоя дисциплина."
+    )    
+        
     await callback.answer()
     assert callback.message
     await callback.message.answer(help_text, parse_mode="Markdown")

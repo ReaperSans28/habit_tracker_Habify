@@ -1,5 +1,5 @@
 """
-New habit creation handler with simplified format:
+Создание новой привычки через FSM. Пользователь вводит привычку в формате:
 "название -- описание -- время и дни"
 """
 from aiogram import F, Router
@@ -16,9 +16,14 @@ from utils.habit_format_validator import habit_format_validator
 from utils.time_day_parser import time_day_parser
 from utils.name_validator import Gender
 
+import re
+
+PATTERN = re.compile(r"^(.+?)\s*--\s*(.+?)\s*--\s*(.+)$")
+# считаем что если пользователь написал "название -- описание -- время и дни",
+# то он имел ввиду создать привычку с такими параметрами
+
 
 habit_create_router = Router()
-
 
 class HabitCreate(StatesGroup):
     """FSM state for habit creation"""
@@ -33,16 +38,12 @@ async def start_habit_creation(callback: CallbackQuery, state: FSMContext):
     """
     # Get user info for message rendering
     user_id = callback.from_user.id if callback.from_user else None
-    if not user_id:
-        await callback.answer("Ошибка: не удалось определить пользователя")
-        return
+    assert user_id is not None, "Ошибка: не удалось определить пользователя"
     
     # Get user from database for gender
     user = db.users.get_user(user_id)
-    if not user:
-        await callback.answer("Ошибка: пользователь не найден в базе")
-        return
-    
+    assert user is not None, "Ошибка: пользователь не найден в базе"
+
     username = user["first_name"]
     gender = user["gender"]
     
@@ -58,6 +59,18 @@ async def start_habit_creation(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+# Глобальный «умный» захват. Срабатывает в любом месте, если текст похож на привычку.
+@habit_create_router.message(F.text.regexp(PATTERN))
+async def quick_habit_capture(message: Message, state: FSMContext):
+    """
+    Позволяет добавлять привычки без кнопок.
+    Если сообщение совпадает с форматом, ставим временное состояние и
+    переиспользуем обычный обработчик.
+    """
+    await state.set_state(HabitCreate.waiting_for_input)
+    await process_habit_input(message, state)
+
+
 @habit_create_router.message(HabitCreate.waiting_for_input)
 async def process_habit_input(message: Message, state: FSMContext):
     """
@@ -65,16 +78,12 @@ async def process_habit_input(message: Message, state: FSMContext):
     Validates format, parses data, saves to database.
     """
     user_id = message.from_user.id if message.from_user else None
-    if not user_id:
-        await message.answer("Ошибка: не удалось определить пользователя")
-        return
-    
+    assert user_id is not None, "Ошибка: не удалось определить пользователя"
+
     # Get user for gender
     user = db.users.get_user(user_id)
-    if not user:  # Не должно случиться, на всякий случай
-        await message.answer("Ошибка: пользователь не найден")
-        return
-    
+    assert user is not None, "Ошибка: пользователь не найден в базе"
+
     username = user["first_name"]
     gender: Gender = user["gender"]
     
